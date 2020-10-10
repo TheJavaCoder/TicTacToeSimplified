@@ -1,21 +1,36 @@
 package com.tictactoe.client;
 
+import com.tictactoe.server.Database.GameResult;
 import com.tictactoe.server.game.Player;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Map;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Callback;
+import javafx.util.StringConverter;
 
 /**
  * JavaFX App
@@ -23,7 +38,7 @@ import javafx.stage.Stage;
 public class App extends Application {
 
     Socket socket;
-    
+
     Player player;
 
     @Override
@@ -61,17 +76,17 @@ public class App extends Application {
 
         Scene scene = new Scene(vbx, 300, 100);
         Stage window = new Stage();
-        
+
         window.setOnCloseRequest((t) -> {
-           
+
             try {
                 socket.close();
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
-            
+
         });
-        
+
         window.setScene(scene);
         window.show();
 
@@ -82,7 +97,7 @@ public class App extends Application {
             new DataOutputStream(socket.getOutputStream()).writeUTF(username);
 
             player = (Player) new ObjectInputStream(socket.getInputStream()).readObject();
-            
+
             Platform.runLater(() -> {
                 connecting.setText("Loaded: " + player.name);
                 try {
@@ -93,26 +108,85 @@ public class App extends Application {
                 window.close();
                 showHistory(s);
             });
-            
-            
+
         } catch (IOException ex) {
             ex.printStackTrace();
         } catch (ClassNotFoundException ex) {
             ex.printStackTrace();
         }
     }
-    
+
     public void showHistory(Stage s) {
-    
+
         VBox vbx = new VBox();
         vbx.setPadding(new Insets(8));
-        
+        vbx.setAlignment(Pos.CENTER);
+
+        vbx.getChildren().add(new Label("Waiting on another player to join the game"));
+
         vbx.getChildren().add(new Label("Win rate: " + player.winPercentage()));
-        
-        Scene scene = new Scene(vbx, 350,300);
+
+        TableView tableview = new TableView();
+
+        ObservableList<ObservableList<String>> data = FXCollections.observableArrayList();
+
+        ArrayList<String> columns = new ArrayList<>();
+        columns.add("opponent");
+        columns.add("date");
+        columns.add("won");
+
+        for (int i = 0; i < columns.size(); i++) {
+
+            final int j = i;
+
+            TableColumn col = new TableColumn(columns.get(i));
+            col.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ObservableList<String>, String>, ObservableValue<String>>() {
+                @Override
+                public ObservableValue<String> call(TableColumn.CellDataFeatures<ObservableList<String>, String> param) {
+                    return new SimpleStringProperty(param.getValue().get(j));
+                }
+            });
+
+            tableview.getColumns().add(col);
+
+            Callback<TableColumn<Map, String>, TableCell<Map, String>> cellFactoryForMap
+                    = new Callback<TableColumn<Map, String>, TableCell<Map, String>>() {
+                @Override
+                public TableCell call(TableColumn p) {
+                    return new TextFieldTableCell(new StringConverter() {
+                        @Override
+                        public String toString(Object t) {
+                            return t.toString();
+                        }
+
+                        @Override
+                        public Object fromString(String string) {
+                            return string;
+                        }
+                    });
+                }
+            };
+
+            if (j != 1) {
+                col.setCellFactory(cellFactoryForMap);
+            }
+        }
+
+        for (GameResult gr : player.gameHistory) {
+            ObservableList<String> row  = FXCollections.observableArrayList();
+            row.add(gr.opponent);
+            row.add(gr.date.toString());
+            row.add(gr.won ? "You" : "Them");
+            data.add(row);
+        }
+        tableview.setItems(data);
+
+        vbx.getChildren().add(tableview);
+
+        Scene scene = new Scene(vbx, 350, 300);
         s.setTitle("Game History");
         s.setScene(scene);
-        
+
     }
 
     public static void main(String[] args) {

@@ -2,6 +2,7 @@ package com.tictactoe.server.Database;
 
 import java.io.Serializable;
 import java.util.Date;
+import javafx.beans.property.StringProperty;
 
 public class GameResult implements Serializable {
 
@@ -14,4 +15,5 @@ public class GameResult implements Serializable {
     // did the user win the match?
     public boolean won;
 
+    
 }
