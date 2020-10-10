@@ -124,7 +124,7 @@ public class App extends Application {
 
         vbx.getChildren().add(new Label("Waiting on another player to join the game"));
 
-        vbx.getChildren().add(new Label("Win rate: " + player.winPercentage()));
+        vbx.getChildren().add(new Label("Win rate: " + (player.winPercentage() * 100 ) + "%"));
 
         TableView tableview = new TableView();
 
