@@ -3,6 +3,7 @@ package com.tictactoe.server;
 import com.tictactoe.server.Database.DBController;
 import com.tictactoe.server.Database.Providers.AccessController;
 import com.tictactoe.server.game.Player;
+import com.tictactoe.server.game.TicTacToe;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
@@ -34,7 +36,7 @@ public class App extends Application {
     
     ServerSocket socket;
     
-    ArrayList<Socket> waitingPlayers = new ArrayList<>();
+    ArrayList<Player> waitingPlayers = new ArrayList<>();
     
     private DBController db;
     
@@ -98,26 +100,35 @@ public class App extends Application {
                     
                     String playerName = new DataInputStream(client.getInputStream()).readUTF();
                     
-                    debug.appendText("User: " + playerName);
+                    debug.appendText("\nUser: " + playerName);
                     
                     db.addPlayer(playerName);
                     
                     Player p = db.getPlayer(playerName);
                     
+                    p.connection = client;
+                    
                     new ObjectOutputStream(client.getOutputStream()).writeObject(p);
                     
-                    waitingPlayers.add(client);
+                    waitingPlayers.add(p);
                     
-                    if(waitingPlayers.size() == 2) {
+                    if(waitingPlayers.size() >= 2) {
                         //TODO need to spin up a game thread...
                         
-                        waitingPlayers = new ArrayList<>();
-                    }else {
-                        DataOutputStream dos = new DataOutputStream(client.getOutputStream());
-                        dos.writeUTF("INFO: Waiting for another player");
-                        dos.writeUTF(STYLESHEET_MODENA);
+                        debug.appendText("\nStarting a game!");
+                        
+                        
+                        Player p1 = waitingPlayers.get(0);
+                        Player p2 = waitingPlayers.get(1);
+                        
+                        Thread t = new Thread(new TicTacToe(p1, p2));
+                        
+                        t.start();
+                        
+                        
+                        //waitingPlayers.removeAll(selectedPlayers);
+                       
                     }
-                    
                 }
             
             } catch (IOException ex) {
@@ -125,6 +136,12 @@ public class App extends Application {
             }
         }).start();
         
+    }
+    
+    public void removePlayers(List<Player> arr) {
+        for(Player p : arr) {
+            waitingPlayers.remove(p);
+        }
     }
 
     public void displayLeaderboard() {

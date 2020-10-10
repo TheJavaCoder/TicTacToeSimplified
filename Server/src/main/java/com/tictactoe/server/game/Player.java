@@ -1,6 +1,7 @@
 package com.tictactoe.server.game;
 
 import com.tictactoe.server.Database.GameResult;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -16,7 +17,8 @@ public class Player implements Serializable {
     // list of the different games the user has played
     public ArrayList<GameResult> gameHistory;
     
-    public Socket connection;
+    
+    public transient Socket connection;
     
     public double winPercentage() {
         
@@ -31,5 +33,5 @@ public class Player implements Serializable {
         return counter / gameHistory.size();
         
     }
-
+    
 }

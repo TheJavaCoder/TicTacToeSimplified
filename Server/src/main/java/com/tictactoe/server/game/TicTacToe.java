@@ -6,11 +6,15 @@
 package com.tictactoe.server.game;
 
 // The main game class
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TicTacToe implements Runnable{
 
-    ArrayList<Player> players;
+    ArrayList<Player> players = new ArrayList<>();
 
     int[][] board = new int[3][3];
     
@@ -22,20 +26,25 @@ public class TicTacToe implements Runnable{
     @Override
     public void run() {
         init();
-        
-        
-        
+        alertPlayers("Start_Game");
+    }
+    
+    public void alertPlayers(String message) {
+        for(Player p : players) {
+            try {
+                new DataOutputStream(p.connection.getOutputStream()).writeUTF(message);
+            } catch (IOException ex) {
+                Logger.getLogger(TicTacToe.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
     
     public void getInput() {
-    
-        
-        
     }
     
     public void init() {
         for(int i = 0; i < 3; i++) {
-            for(int j = 0; i < 3; j++) {
+            for(int j = 0; j < 3; j++) {
                 board[i][j] = -1;
             }
         }

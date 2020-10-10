@@ -122,7 +122,9 @@ public class App extends Application {
         vbx.setPadding(new Insets(8));
         vbx.setAlignment(Pos.CENTER);
 
-        vbx.getChildren().add(new Label("Waiting on another player to join the game"));
+        Label connecting = new Label("Waiting on another player to join the game");
+        
+        vbx.getChildren().add(connecting);
 
         vbx.getChildren().add(new Label("Win rate: " + (player.winPercentage() * 100 ) + "%"));
 
@@ -186,7 +188,24 @@ public class App extends Application {
         Scene scene = new Scene(vbx, 350, 300);
         s.setTitle("Game History");
         s.setScene(scene);
-
+        
+        new Thread(() -> {
+        
+            try {
+                String readyToPlay = new DataInputStream(socket.getInputStream()).readUTF();
+                
+                if("Start_Game".equals(readyToPlay)) {
+                    Platform.runLater(() -> {
+                        connecting.setText("Connected!");
+                    });
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            
+        }).start();
+        
+        
     }
 
     public static void main(String[] args) {
