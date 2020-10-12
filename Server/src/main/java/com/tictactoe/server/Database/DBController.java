@@ -17,7 +17,7 @@ public interface DBController {
     public ArrayList<String> requiredColumns = new ArrayList<String>() {
         {
             add("UserName TEXT(50)");
-            add("PlayerOne Number, PlayerTwo Number, Win Number, Date Text");
+            add("PlayerOne Number, PlayerTwo Number, Win Number, Date Text, GameUUID Text");
         }
     };
 
@@ -34,8 +34,12 @@ public interface DBController {
     Player getPlayer(String name);
 
     // updating game status
-    void updateGameStats(Player you, Player opponent, boolean won);
+    void updateGameStats(Player you, Player opponent, boolean won, String UUID);
 
     ObservableList<ObservableList<String>> getGames();
+    
+    ObservableList<ObservableList<String>> getGames(String pl);
+    
+    public ObservableList<ObservableList<String>> getLeaderboard();
 
 }

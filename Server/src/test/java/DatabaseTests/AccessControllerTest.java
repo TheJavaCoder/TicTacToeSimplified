@@ -172,6 +172,7 @@ import com.tictactoe.server.Database.Providers.AccessController;
 import com.tictactoe.server.Database.DBController;
 import com.tictactoe.server.Database.GameResult;
 import com.tictactoe.server.game.Player;
+import java.util.UUID;
 
 // Test for generatation of the db file and tables. 
 public class AccessControllerTest {
@@ -184,15 +185,21 @@ public class AccessControllerTest {
 
         db.init();
 
-        db.addPlayer("Test1'");
+        String player1 = "Test1";
+        String player2 = "Test2";
+        
+        
+        db.addPlayer(player1);
 
-        db.addPlayer("Test2");
+        db.addPlayer(player2);
+        
+        UUID uuid = UUID.randomUUID();
 
-        db.updateGameStats(db.getPlayer("Test1"), db.getPlayer("Test2"), false);
-        db.updateGameStats(db.getPlayer("Test2"), db.getPlayer("Test1"), true);
+        db.updateGameStats(db.getPlayer(player1), db.getPlayer(player2), false, uuid.toString());
+        db.updateGameStats(db.getPlayer(player2), db.getPlayer(player1), true, uuid.toString());
 
-        printGameHistory(db.getPlayer("Test1"));
-        printGameHistory(db.getPlayer("Test2"));
+        printGameHistory(db.getPlayer(player1));
+        printGameHistory(db.getPlayer(player2));
     }
 
     public static void printGameHistory(Player p) {

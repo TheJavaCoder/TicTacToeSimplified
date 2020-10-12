@@ -12,7 +12,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -158,7 +162,7 @@ public class AccessController implements DBController {
                 gr.won = (results.getInt(2) == 1);
 
                 // Parse the date
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 gr.date = simpleDateFormat.parse(results.getString(3));
 
                 // Add to the user's object
@@ -178,9 +182,9 @@ public class AccessController implements DBController {
     // Fully Tested
     // Update game status - function that is called twice per game to save the player's state
     @Override
-    public void updateGameStats(Player you, Player opponent, boolean won) {
+    public void updateGameStats(Player you, Player opponent, boolean won, String UUID) {
 
-        String q = "INSERT INTO games (PlayerOne, PlayerTwo, Win, Date) VALUES (?,?,?,?)";
+        String q = "INSERT INTO games (PlayerOne, PlayerTwo, Win, Date, GameUUID) VALUES (?,?,?,?,?)";
 
         int IntWon = (won) ? 1 : 0;
 
@@ -188,10 +192,13 @@ public class AccessController implements DBController {
 
             PreparedStatement ps = conn.prepareStatement(q);
 
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
             ps.setInt(1, you.id);
             ps.setInt(2, opponent.id);
             ps.setInt(3, IntWon);
-            ps.setString(4, LocalDate.now().toString());
+            ps.setString(4, simpleDateFormat.format(new Date()));
+            ps.setString(5, UUID);
             ps.execute();
 
         } catch (Exception e) {
@@ -201,15 +208,73 @@ public class AccessController implements DBController {
 
     @Override
     public ObservableList<ObservableList<String>> getGames() {
-        
-        ObservableList<ObservableList<String>> rowsColumns = FXCollections.observableArrayList();
-        
-        
-        
-        return rowsColumns;
-    
+        return getGames(null);
     }
-    
-    
+
+    @Override
+    public ObservableList<ObservableList<String>> getGames(String player) {
+
+        ObservableList<ObservableList<String>> data = FXCollections.observableArrayList();
+        
+        PreparedStatement ps;
+        try {
+            if (player == null) {
+
+                ps = conn.prepareStatement("SELECT s.GameUUID, s.WhoWon, s.WhoLost, s.Date FROM ( SELECT GameUUID, iif(games.Win=1, (SELECT username FROM users WHERE games.PlayerOne=id), (SELECT username FROM users WHERE games.PlayerTwo=id)) AS WhoWon, iif(games.Win=0, (SELECT username FROM users WHERE games.PlayerOne=id), (SELECT username FROM users WHERE games.PlayerTwo=id)) AS WhoLost, Date FROM games) as s  GROUP BY s.GameUUID, s.WhoWon, s.WhoLost,  s.Date ;");
+
+            } else {
+                ps = conn.prepareStatement("SELECT s.GameUUID, s.WhoWon, s.WhoLost, s.Date FROM ( SELECT GameUUID, iif(games.Win=1, (SELECT username FROM users WHERE games.PlayerOne=id), (SELECT username FROM users WHERE games.PlayerTwo=id)) AS WhoWon, iif(games.Win=0, (SELECT username FROM users WHERE games.PlayerOne=id), (SELECT username FROM users WHERE games.PlayerTwo=id)) AS WhoLost, Date FROM games WHERE PlayerOne=(SELECT id FROM users WHERE username=?)) as s  GROUP BY s.GameUUID, s.WhoWon, s.WhoLost,  s.Date ;");
+                ps.setString(1, player);
+            }
+            
+            ResultSet results = ps.executeQuery();
+
+            while (results.next()) {
+                ObservableList<String> row = FXCollections.observableArrayList();
+                row.add(results.getString(2));
+                row.add(results.getString(3));
+                row.add(results.getString(4));
+                data.add(row);
+            }
+            
+        } catch (Exception ex) {
+            Logger.getLogger(AccessController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return data;
+
+    }
+
+    public ObservableList<ObservableList<String>> getLeaderboard() {
+     
+        ObservableList<ObservableList<String>> data = FXCollections.observableArrayList();
+        
+        try {
+            
+            PreparedStatement ps = conn.prepareStatement("SELECT [f].[username], [f].[Wins], [f].[totalgames], [f].[WinPercentage] FROM ( SELECT [users].[username],  (SELECT COUNT([games].[PlayerOne]) from [games] WHERE [games].[PlayerOne]=[users].[id] AND [games].[Win]=1) AS Wins, COUNT(g.WhoWon) AS totalgames, ((SELECT COUNT([games].[PlayerOne]) from [games] WHERE [games].[PlayerOne]=[users].[id] AND [games].[Win]=1) / COUNT(g.WhoWon)) AS WinPercentage FROM [users] LEFT OUTER JOIN ( SELECT s.GameUUID, s.WhoWon, s.WhoLost, s.Date FROM ( SELECT [games].[GameUUID], iif([games].[Win]=1, (SELECT [users].[username] FROM [users] WHERE [games].[PlayerOne]=id), (SELECT [users].[username] FROM [users] WHERE [games].[PlayerTwo]=[users].[id])) AS WhoWon, iif([games].[Win]=0, (SELECT [users].[username] FROM [users] WHERE [games].[PlayerOne]=[users].[id]), (SELECT [users].[username] FROM [users] WHERE [games].[PlayerTwo]=[users].[id])) AS WhoLost, [Date] FROM [games]) as s  GROUP BY s.GameUUID, s.WhoWon, s.WhoLost, s.Date ) AS g ON g.WhoWon = [users].[username] OR g.WhoLost = [users].[username] GROUP BY [users].[username], [users].[id]) AS [f] ORDER BY ([f].[Wins] / [f].[TotalGames]) ASC ");
+            
+            
+            
+            ResultSet results = ps.executeQuery();
+            
+            
+            
+            while(results.next()) {
+            
+                ObservableList<String> row = FXCollections.observableArrayList();
+                row.add(results.getString(1));
+                row.add(results.getString(2));
+                row.add(results.getString(3));
+                //row.add(String.valueOf(results.getDouble(4)));
+                row.add(String.valueOf( (Double.valueOf(results.getString(2)) / Double.valueOf(results.getString(3))) * 100 ));
+                
+                data.add(row);
+            }
+        
+        
+        } catch (SQLException ex) {
+            Logger.getLogger(AccessController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return data;
+    }
     
 }

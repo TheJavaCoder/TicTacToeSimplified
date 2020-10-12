@@ -121,12 +121,22 @@ public class MySqlController implements DBController {
     }
 
     @Override
-    public void updateGameStats(Player you, Player opponent, boolean won) {
+    public void updateGameStats(Player you, Player opponent, boolean won, String UUID) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public ObservableList<ObservableList<String>> getGames() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ObservableList<ObservableList<String>> getGames(String pl) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ObservableList<ObservableList<String>> getLeaderboard() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
