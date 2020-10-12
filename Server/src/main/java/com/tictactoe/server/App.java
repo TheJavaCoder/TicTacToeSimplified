@@ -165,6 +165,7 @@ public class App extends Application {
         
         // Fill the table created earilier.
         builtTable = buildTable("Winner", "Loser", "Date");
+        builtTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         builtTable.setItems(db.getGames());
         
         // Main
@@ -206,6 +207,8 @@ public class App extends Application {
 
         // Leaderboard table view
         TableView leaderboard = buildTable("User", "Wins", "Total Games", "Win Percentage");
+        leaderboard.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+                
 
         // filling table and setting sorting order
         leaderboard.setItems(db.getLeaderboard());
@@ -257,7 +260,7 @@ public class App extends Application {
                 }
             };
 
-            if (j != 1) {
+            if (j != 0) {
                 col.setCellFactory(cellFactoryForMap);
             }
         }
