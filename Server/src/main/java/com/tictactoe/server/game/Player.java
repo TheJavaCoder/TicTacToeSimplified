@@ -34,4 +34,16 @@ public class Player implements Serializable {
         
     }
     
+    public int getMatchesWithPlayer(String otherplayer) {
+        int count = 0;
+    
+        for(GameResult gr : gameHistory) {
+            if(gr.opponent.equals(otherplayer)) {
+                count++;
+            }
+        }
+        
+        return count;
+    }
+    
 }

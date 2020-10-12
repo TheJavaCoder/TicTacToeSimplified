@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Map;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -26,7 +25,6 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
@@ -131,10 +129,10 @@ public class App extends Application {
         vbx.setAlignment(Pos.CENTER);
 
         Label connecting = new Label("Waiting on another player to join the game");
-        
+
         vbx.getChildren().add(connecting);
 
-        vbx.getChildren().add(new Label("Win rate: " + (player.winPercentage() * 100 ) + "%"));
+        vbx.getChildren().add(new Label("Win rate: " + (player.winPercentage() * 100) + "%"));
 
         TableView tableview = new TableView();
 
@@ -183,7 +181,7 @@ public class App extends Application {
         }
 
         for (GameResult gr : player.gameHistory) {
-            ObservableList<String> row  = FXCollections.observableArrayList();
+            ObservableList<String> row = FXCollections.observableArrayList();
             row.add(gr.opponent);
             row.add(gr.date.toString());
             row.add(gr.won ? "You" : "Them");
@@ -196,29 +194,32 @@ public class App extends Application {
         Scene scene = new Scene(vbx, 350, 300);
         s.setTitle("Game History");
         s.setScene(scene);
-        
+
         new Thread(() -> {
-        
+
             try {
                 String readyToPlay = new DataInputStream(socket.getInputStream()).readUTF();
                 
-                if("Start_Game".equals(readyToPlay)) {
+
+                if ("Start_Game".equals(readyToPlay)) {
+                    String title = new DataInputStream(socket.getInputStream()).readUTF();
                     Platform.runLater(() -> {
+
                         connecting.setText("Connected!");
-                        s.setTitle("TicTacToe");
+                        s.setTitle(title);
                         s.setScene(new Scene(createContent()));
+
                     });
-                    
+
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
-            
+
         }).start();
-        
-        
+
     }
-    
+
     private Parent createContent() {
         Pane root = new Pane();
         root.setPrefSize(450, 450);
@@ -234,7 +235,7 @@ public class App extends Application {
         return root;
     }
 
-     public class Tile extends StackPane {
+    public class Tile extends StackPane {
 
         private Text text = new Text();
 
@@ -266,7 +267,6 @@ public class App extends Application {
         }
     }
 
-    
     public static void main(String[] args) {
         launch();
     }

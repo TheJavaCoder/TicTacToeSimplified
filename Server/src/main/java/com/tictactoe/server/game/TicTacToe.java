@@ -27,6 +27,17 @@ public class TicTacToe implements Runnable{
     public void run() {
         init();
         alertPlayers("Start_Game");
+        int numberOfMatches = players.get(0).getMatchesWithPlayer(players.get(1).name);
+        alertPlayer("Match #" + (numberOfMatches + 1 )  + " against " + players.get(0).name, players.get(1));
+        alertPlayer("Match #" + (numberOfMatches + 1 )  + " against " + players.get(1).name, players.get(0));
+    }
+    
+    public void alertPlayer(String message, Player p) {
+        try {
+            new DataOutputStream(p.connection.getOutputStream()).writeUTF(message);
+        } catch (IOException ex) {
+            Logger.getLogger(TicTacToe.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public void alertPlayers(String message) {
