@@ -11,8 +11,8 @@ import com.tictactoe.server.Database.Providers.MySqlController;
  */
 
 /**
- *
- * @author bapco
+ * Authored by: Bailey Costello
+ * 2020
  */
 public class MySqlControllerTest {
 

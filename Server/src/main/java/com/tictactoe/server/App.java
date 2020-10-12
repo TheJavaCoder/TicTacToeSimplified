@@ -36,7 +36,8 @@ import javafx.util.Callback;
 import javafx.util.StringConverter;
 
 /**
- * JavaFX App
+ * Authored by: Bailey Costello
+ * 2020
  */
 public class App extends Application {
 
@@ -47,10 +48,49 @@ public class App extends Application {
     ArrayList<Player> waitingPlayers = new ArrayList<>();
 
     private DBController db;
+    
+    // History table view and search field needs to be global cause that button 
+    TextField search;
+    TableView builtTable;
 
     @Override
     public void start(Stage stage) {
+        
+        VBox vbox = new VBox();
+        vbox.setAlignment(Pos.CENTER);
 
+        debug.setPadding(new Insets(8));
+        debug.setEditable(false);
+
+        
+        // Game history view
+        Button b = new Button("View Game History");
+        b.setPadding(new Insets(8));
+        b.setOnAction((t) -> {
+            displayHistory();
+        });
+
+        // Leaderboard view
+        Button b2 = new Button("View Leaderboard");
+        b2.setPadding(new Insets(8));
+        b2.setOnAction((t) -> {
+            displayLeaderBoard();
+        });
+
+        // Styling for those buttons
+        HBox h = new HBox();
+        h.setAlignment(Pos.CENTER);
+        h.getChildren().addAll(b, b2);
+
+        
+        vbox.getChildren().addAll(debug, h);
+
+        var scene = new Scene(vbox, 350, 200);
+        stage.setTitle("Server");
+        stage.setScene(scene);
+        stage.show();
+        
+        // Clean that server socket up!
         stage.setOnCloseRequest((t) -> {
             try {
                 socket.close();
@@ -59,42 +99,7 @@ public class App extends Application {
             }
         });
 
-        VBox vbox = new VBox();
-        vbox.setAlignment(Pos.CENTER);
-
-        debug.setPadding(new Insets(8));
-        debug.setEditable(false);
-
-        Button b = new Button("View Game History");
-        b.setPadding(new Insets(8));
-        b.setOnAction((t) -> {
-            displayHistory();
-        });
-
-        Button b2 = new Button("View Leaderboard");
-        b2.setPadding(new Insets(8));
-        b2.setOnAction((t) -> {
-            displayLeaderBoard();
-        });
-        
-        HBox h = new HBox();
-        h.setAlignment(Pos.CENTER);
-        h.getChildren().addAll(b, b2);
-        
-        vbox.getChildren().addAll(debug, h);
-
-        var scene = new Scene(vbox, 350, 200);
-        stage.setTitle("Server");
-        stage.setScene(scene);
-        stage.show();
-        stage.setOnCloseRequest((t) -> {
-            try {
-                socket.close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        });
-
+        // Start listening for clients
         listenForClients();
     }
 
@@ -155,21 +160,25 @@ public class App extends Application {
         }
     }
 
-    TextField search = new TextField();
-    TableView builtTable = buildTable("Winner", "Loser", "Date");
-
     public void displayHistory() {
+        search = new TextField();
+        
+        // Fill the table created earilier.
+        builtTable = buildTable("Winner", "Loser", "Date");
+        builtTable.setItems(db.getGames());
+        
+        // Main
         VBox secondary = new VBox();
-
+        
+        //Button container
         HBox secon = new HBox();
         secon.setAlignment(Pos.CENTER);
-
+        
+        Button searchBT = new Button("Search");
         search.setPromptText("Enter username");
 
-        Button searchBT = new Button("Search");
-
-        builtTable.setItems(db.getGames());
-
+        
+        // Search button
         searchBT.setOnAction((e) -> {
             builtTable.getItems().clear();
             if (search.getText().length() != 0) {
@@ -179,8 +188,10 @@ public class App extends Application {
             }
         });
 
+        // Add button and input container to the main view
         secon.getChildren().addAll(search, searchBT);
 
+        // Add container and table together
         secondary.getChildren().addAll(secon, builtTable);
 
         Scene secondScene = new Scene(secondary, 260, 200);
@@ -190,17 +201,19 @@ public class App extends Application {
         newWindow.show();
     }
 
-    TableView leaderboard = buildTable("User", "Wins", "Total Games", "Win Percentage");
-
     public void displayLeaderBoard() {
         VBox secondary = new VBox();
-        
+
+        // Leaderboard table view
+        TableView leaderboard = buildTable("User", "Wins", "Total Games", "Win Percentage");
+
+        // filling table and setting sorting order
         leaderboard.setItems(db.getLeaderboard());
         leaderboard.getSortOrder().add(leaderboard.getColumns().get(3));
         leaderboard.sort();
-        
+
         secondary.getChildren().add(leaderboard);
-        
+
         Scene secondScene = new Scene(secondary, 260, 200);
         Stage newWindow = new Stage();
         newWindow.setTitle("Leaderboard");
@@ -208,6 +221,7 @@ public class App extends Application {
         newWindow.show();
     }
 
+    // Function used to build tableview column objects basaed on a list of column names.
     private TableView buildTable(String... columns) {
         TableView tableview = new TableView();
 

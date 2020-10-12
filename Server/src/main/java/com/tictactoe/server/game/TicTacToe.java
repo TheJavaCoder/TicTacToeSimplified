@@ -12,6 +12,12 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Authored by: Bailey Costello
+ * 2020
+ */
+
+
 public class TicTacToe implements Runnable{
 
     ArrayList<Player> players = new ArrayList<>();

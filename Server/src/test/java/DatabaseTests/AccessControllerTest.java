@@ -168,6 +168,12 @@ Date of match: Fri Oct 02 00:00:00 EDT 2020
  */
 
 
+/**
+ * Authored by: Bailey Costello
+ * 2020
+ */
+
+
 import com.tictactoe.server.Database.Providers.AccessController;
 import com.tictactoe.server.Database.DBController;
 import com.tictactoe.server.Database.GameResult;
@@ -185,8 +191,8 @@ public class AccessControllerTest {
 
         db.init();
 
-        String player1 = "Test1";
-        String player2 = "Test2";
+        String player1 = "Test2";
+        String player2 = "Test1";
         
         
         db.addPlayer(player1);

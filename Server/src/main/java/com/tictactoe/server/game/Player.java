@@ -6,6 +6,11 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
 
+/**
+ * Authored by: Bailey Costello
+ * 2020
+ */
+
 public class Player implements Serializable {
 
     // The unique id of the player in the db

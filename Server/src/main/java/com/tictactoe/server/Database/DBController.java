@@ -4,6 +4,12 @@ import com.tictactoe.server.game.Player;
 import java.util.ArrayList;
 import javafx.collections.ObservableList;
 
+
+/**
+ * Authored by: Bailey Costello
+ * 2020
+ */
+
 // To be a db controller you have to implement these functions
 public interface DBController {
 

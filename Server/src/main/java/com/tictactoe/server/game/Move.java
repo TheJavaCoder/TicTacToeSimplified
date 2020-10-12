@@ -6,8 +6,8 @@
 package com.tictactoe.server.game;
 
 /**
- *
- * @author bapco
+ * Authored by: Bailey Costello
+ * 2020
  */
 public class Move {
 

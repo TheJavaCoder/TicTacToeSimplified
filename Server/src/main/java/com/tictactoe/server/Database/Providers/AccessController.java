@@ -20,6 +20,11 @@ import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+/**
+ * Authored by: Bailey Costello
+ * 2020
+ */
+
 public class AccessController implements DBController {
 
     String dataFilePath = "C:/Data/Test/";
@@ -183,17 +188,21 @@ public class AccessController implements DBController {
     // Update game status - function that is called twice per game to save the player's state
     @Override
     public void updateGameStats(Player you, Player opponent, boolean won, String UUID) {
-
+        
+        // Query
         String q = "INSERT INTO games (PlayerOne, PlayerTwo, Win, Date, GameUUID) VALUES (?,?,?,?,?)";
 
+        // Convert to an int
         int IntWon = (won) ? 1 : 0;
 
         try {
-
+            // Prepared insert statement
             PreparedStatement ps = conn.prepareStatement(q);
 
+            // Date format for some standard
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+            // filling prepared statement
             ps.setInt(1, you.id);
             ps.setInt(2, opponent.id);
             ps.setInt(3, IntWon);
@@ -206,37 +215,45 @@ public class AccessController implements DBController {
         }
     }
 
+    // Function that can be called if the user only wants to recieve the entire data set
     @Override
     public ObservableList<ObservableList<String>> getGames() {
         return getGames(null);
     }
 
+    // Function to generate the game history tableview array list
     @Override
     public ObservableList<ObservableList<String>> getGames(String player) {
 
+        // Return data
         ObservableList<ObservableList<String>> data = FXCollections.observableArrayList();
-        
+
+        // Prepared statement
         PreparedStatement ps;
         try {
+            
             if (player == null) {
-
+                // They want to get all players
                 ps = conn.prepareStatement("SELECT s.GameUUID, s.WhoWon, s.WhoLost, s.Date FROM ( SELECT GameUUID, iif(games.Win=1, (SELECT username FROM users WHERE games.PlayerOne=id), (SELECT username FROM users WHERE games.PlayerTwo=id)) AS WhoWon, iif(games.Win=0, (SELECT username FROM users WHERE games.PlayerOne=id), (SELECT username FROM users WHERE games.PlayerTwo=id)) AS WhoLost, Date FROM games) as s  GROUP BY s.GameUUID, s.WhoWon, s.WhoLost,  s.Date ;");
-
             } else {
+                // They only want a certain player
                 ps = conn.prepareStatement("SELECT s.GameUUID, s.WhoWon, s.WhoLost, s.Date FROM ( SELECT GameUUID, iif(games.Win=1, (SELECT username FROM users WHERE games.PlayerOne=id), (SELECT username FROM users WHERE games.PlayerTwo=id)) AS WhoWon, iif(games.Win=0, (SELECT username FROM users WHERE games.PlayerOne=id), (SELECT username FROM users WHERE games.PlayerTwo=id)) AS WhoLost, Date FROM games WHERE PlayerOne=(SELECT id FROM users WHERE username=?)) as s  GROUP BY s.GameUUID, s.WhoWon, s.WhoLost,  s.Date ;");
                 ps.setString(1, player);
             }
-            
+
+            // Results from the prepared statement
             ResultSet results = ps.executeQuery();
 
+            // Loop through them
             while (results.next()) {
+                // Row array list
                 ObservableList<String> row = FXCollections.observableArrayList();
                 row.add(results.getString(2));
                 row.add(results.getString(3));
                 row.add(results.getString(4));
                 data.add(row);
             }
-            
+
         } catch (Exception ex) {
             Logger.getLogger(AccessController.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -244,37 +261,37 @@ public class AccessController implements DBController {
 
     }
 
+    
+    //Function to generate the leaderboard tableview array list
     public ObservableList<ObservableList<String>> getLeaderboard() {
-     
+
+        // Data to return
         ObservableList<ObservableList<String>> data = FXCollections.observableArrayList();
-        
+
         try {
-            
+            // Return a list of all the users their won games, lost games, and win percentage
             PreparedStatement ps = conn.prepareStatement("SELECT [f].[username], [f].[Wins], [f].[totalgames], [f].[WinPercentage] FROM ( SELECT [users].[username],  (SELECT COUNT([games].[PlayerOne]) from [games] WHERE [games].[PlayerOne]=[users].[id] AND [games].[Win]=1) AS Wins, COUNT(g.WhoWon) AS totalgames, ((SELECT COUNT([games].[PlayerOne]) from [games] WHERE [games].[PlayerOne]=[users].[id] AND [games].[Win]=1) / COUNT(g.WhoWon)) AS WinPercentage FROM [users] LEFT OUTER JOIN ( SELECT s.GameUUID, s.WhoWon, s.WhoLost, s.Date FROM ( SELECT [games].[GameUUID], iif([games].[Win]=1, (SELECT [users].[username] FROM [users] WHERE [games].[PlayerOne]=id), (SELECT [users].[username] FROM [users] WHERE [games].[PlayerTwo]=[users].[id])) AS WhoWon, iif([games].[Win]=0, (SELECT [users].[username] FROM [users] WHERE [games].[PlayerOne]=[users].[id]), (SELECT [users].[username] FROM [users] WHERE [games].[PlayerTwo]=[users].[id])) AS WhoLost, [Date] FROM [games]) as s  GROUP BY s.GameUUID, s.WhoWon, s.WhoLost, s.Date ) AS g ON g.WhoWon = [users].[username] OR g.WhoLost = [users].[username] GROUP BY [users].[username], [users].[id]) AS [f] ORDER BY ([f].[Wins] / [f].[TotalGames]) ASC ");
-            
-            
-            
+
             ResultSet results = ps.executeQuery();
-            
-            
-            
-            while(results.next()) {
-            
+
+            while (results.next()) {
+
+                // Table row arraylist
                 ObservableList<String> row = FXCollections.observableArrayList();
                 row.add(results.getString(1));
                 row.add(results.getString(2));
                 row.add(results.getString(3));
-                //row.add(String.valueOf(results.getDouble(4)));
-                row.add(String.valueOf( (Double.valueOf(results.getString(2)) / Double.valueOf(results.getString(3))) * 100 ));
                 
+                // Whoops Ucanaccess can't return my calculated field... :(
+                row.add(String.valueOf((Double.valueOf(results.getString(2)) / Double.valueOf(results.getString(3))) * 100));
+
                 data.add(row);
             }
-        
-        
+
         } catch (SQLException ex) {
             Logger.getLogger(AccessController.class.getName()).log(Level.SEVERE, null, ex);
         }
         return data;
     }
-    
+
 }
