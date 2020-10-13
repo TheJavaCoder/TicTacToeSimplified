@@ -13,7 +13,7 @@ public class GameResult implements Serializable {
     public Date date;
 
     // did the user win the match?
-    public boolean won;
+    public int won;
 
     
 }

@@ -184,7 +184,11 @@ public class App extends Application {
             ObservableList<String> row = FXCollections.observableArrayList();
             row.add(gr.opponent);
             row.add(gr.date.toString());
-            row.add(gr.won ? "You" : "Them");
+            if(gr.won != -1) {
+                row.add(gr.won == player.id ? "You" : "Them");
+            }else {
+                row.add("Tie!");
+            }
             data.add(row);
         }
         tableview.setItems(data);

@@ -166,14 +166,9 @@ Date of match: Fri Oct 02 00:00:00 EDT 2020
 
 
  */
-
-
 /**
- * Authored by: Bailey Costello
- * 2020
+ * Authored by: Bailey Costello 2020
  */
-
-
 import com.tictactoe.server.Database.Providers.AccessController;
 import com.tictactoe.server.Database.DBController;
 import com.tictactoe.server.Database.GameResult;
@@ -193,15 +188,14 @@ public class AccessControllerTest {
 
         String player1 = "Test3";
         String player2 = "Test1";
-        
-        
+
         db.addPlayer(player1);
 
         db.addPlayer(player2);
-        
+
         UUID uuid = UUID.randomUUID();
 
-        db.updateGameStats(db.getPlayer(player1), db.getPlayer(player2), -1, uuid.toString());
+        db.updateGameStats(db.getPlayer(player1), db.getPlayer(player2), 1, uuid.toString());
 
         printGameHistory(db.getPlayer(player1));
         printGameHistory(db.getPlayer(player2));
@@ -212,7 +206,7 @@ public class AccessControllerTest {
         System.out.println("----------------------- Game History of " + p.name + " ------------------------");
 
         System.out.println("Matches Played: " + p.gameHistory.size() + " \n");
-        
+
         System.out.println("Win Percentage: " + p.winPercentage() + " \n\n");
 
         for (int i = 0; i < p.gameHistory.size(); i++) {
@@ -223,7 +217,11 @@ public class AccessControllerTest {
 
             System.out.println("Opponent: " + g.opponent);
             System.out.print("Who won?: ");
-            System.out.println((g.won) ? "You" : "Them");
+            if (g.won != -1) {
+                System.out.println((g.won) == p.id ? "You" : "Them");
+            } else {
+                System.out.println("Tie!");
+            }
             System.out.println("Date of match: " + g.date + "\n");
         }
 

@@ -23,7 +23,7 @@ public class Player implements Serializable {
         double counter = 0;
         
         for(GameResult gr : gameHistory) {
-            if(gr.won) {
+            if(gr.won == id) {
                 counter++;
             }
         }

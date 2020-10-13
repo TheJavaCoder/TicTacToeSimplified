@@ -147,10 +147,15 @@ public class AccessController implements DBController {
                 return null;
             }
 
-            query = "SELECT PlayerTwo, Win, Date FROM games WHERE PlayerOne = ? OR PlayerTwo = ?";
-            ps = conn.prepareStatement(query);
+            //query = "SELECT PlayerTwo, Win, Date FROM games WHERE PlayerOne = ? OR PlayerTwo = ?";
+            ps = conn.prepareStatement("SELECT  iif(games.PlayerOne = ?,  (SELECT username FROM users WHERE id = games.PlayerTwo), (SELECT username FROM users WHERE id = games.PlayerOne)) AS oppenent, Win, Date FROM games WHERE PlayerOne = ? OR PlayerTwo = ?");
+//            ps.setString(1, name);
+//            ps.setString(2, "%" + name + "%");
+            
+            //ps = conn.prepareStatement(query);
             ps.setInt(1, player.id);
             ps.setInt(2, player.id);
+            ps.setInt(3, player.id);
             results = ps.executeQuery();
 
             player.gameHistory = new ArrayList<>();
@@ -162,11 +167,11 @@ public class AccessController implements DBController {
                 GameResult gr = new GameResult();
 
                 // The other player
-                gr.opponent = getPlayer(results.getInt(1));
+                gr.opponent = results.getString(1);
 
                 // Boolean of the win
-                gr.won = results.getInt(2) == player.id;
-                    
+                gr.won = results.getInt(2);
+                
                 // Parse the date
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 gr.date = simpleDateFormat.parse(results.getString(3));
