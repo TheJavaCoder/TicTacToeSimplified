@@ -195,6 +195,7 @@ public class AccessControllerTest {
 
         UUID uuid = UUID.randomUUID();
 
+        // Player object, Player object, id of player that won if tie -1, game uuid
         db.updateGameStats(db.getPlayer(player1), db.getPlayer(player2), 1, uuid.toString());
 
         printGameHistory(db.getPlayer(player1));

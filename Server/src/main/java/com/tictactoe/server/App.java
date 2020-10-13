@@ -12,8 +12,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -92,7 +90,7 @@ public class App extends Application {
         stage.setScene(scene);
         stage.show();
         
-        // Clean that server socket up!
+        // Clean that server up!
         stage.setOnCloseRequest((t) -> {
             
             for(Stage exs : extraStages) {
@@ -102,7 +100,6 @@ public class App extends Application {
             try {
                 socket.close();
             } catch (IOException ex) {
-                Logger.getLogger(App.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
 
