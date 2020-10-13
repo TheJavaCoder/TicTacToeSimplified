@@ -49,6 +49,8 @@ public class App extends Application {
 
     private DBController db;
     
+    ArrayList<Stage> extraStages = new ArrayList<>();
+    
     // History table view and search field needs to be global cause that button 
     TextField search;
     TableView builtTable;
@@ -92,6 +94,11 @@ public class App extends Application {
         
         // Clean that server socket up!
         stage.setOnCloseRequest((t) -> {
+            
+            for(Stage exs : extraStages) {
+                exs.close();
+            }
+            
             try {
                 socket.close();
             } catch (IOException ex) {
@@ -199,6 +206,7 @@ public class App extends Application {
         Stage newWindow = new Stage();
         newWindow.setTitle("Game History");
         newWindow.setScene(secondScene);
+        extraStages.add(newWindow);
         newWindow.show();
     }
 
@@ -221,6 +229,7 @@ public class App extends Application {
         Stage newWindow = new Stage();
         newWindow.setTitle("Leaderboard");
         newWindow.setScene(secondScene);
+        extraStages.add(newWindow);
         newWindow.show();
     }
 
