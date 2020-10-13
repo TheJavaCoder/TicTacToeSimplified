@@ -40,7 +40,7 @@ public interface DBController {
     Player getPlayer(String name);
 
     // updating game status
-    void updateGameStats(Player you, Player opponent, boolean won, String UUID);
+    void updateGameStats(Player you, Player opponent, int won, String UUID);
 
     ObservableList<ObservableList<String>> getGames();
     

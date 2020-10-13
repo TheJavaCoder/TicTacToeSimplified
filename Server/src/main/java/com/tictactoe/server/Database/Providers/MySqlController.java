@@ -126,7 +126,7 @@ public class MySqlController implements DBController {
     }
 
     @Override
-    public void updateGameStats(Player you, Player opponent, boolean won, String UUID) {
+    public void updateGameStats(Player you, Player opponent, int won, String UUID) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

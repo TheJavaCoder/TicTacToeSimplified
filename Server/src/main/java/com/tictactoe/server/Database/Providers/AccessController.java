@@ -147,9 +147,10 @@ public class AccessController implements DBController {
                 return null;
             }
 
-            query = "SELECT PlayerTwo, Win, Date FROM games WHERE PlayerOne = ?";
+            query = "SELECT PlayerTwo, Win, Date FROM games WHERE PlayerOne = ? OR PlayerTwo = ?";
             ps = conn.prepareStatement(query);
             ps.setInt(1, player.id);
+            ps.setInt(2, player.id);
             results = ps.executeQuery();
 
             player.gameHistory = new ArrayList<>();
@@ -164,8 +165,8 @@ public class AccessController implements DBController {
                 gr.opponent = getPlayer(results.getInt(1));
 
                 // Boolean of the win
-                gr.won = (results.getInt(2) == 1);
-
+                gr.won = results.getInt(2) == player.id;
+                    
                 // Parse the date
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 gr.date = simpleDateFormat.parse(results.getString(3));
@@ -187,13 +188,13 @@ public class AccessController implements DBController {
     // Fully Tested
     // Update game status - function that is called twice per game to save the player's state
     @Override
-    public void updateGameStats(Player you, Player opponent, boolean won, String UUID) {
+    public void updateGameStats(Player you, Player opponent, int won, String UUID) {
         
         // Query
         String q = "INSERT INTO games (PlayerOne, PlayerTwo, Win, Date, GameUUID) VALUES (?,?,?,?,?)";
 
         // Convert to an int
-        int IntWon = (won) ? 1 : 0;
+        int IntWon = (won);
 
         try {
             // Prepared insert statement
@@ -234,11 +235,14 @@ public class AccessController implements DBController {
             
             if (player == null) {
                 // They want to get all players
-                ps = conn.prepareStatement("SELECT s.GameUUID, s.WhoWon, s.WhoLost, s.Date FROM ( SELECT GameUUID, iif(games.Win=1, (SELECT username FROM users WHERE games.PlayerOne=id), (SELECT username FROM users WHERE games.PlayerTwo=id)) AS WhoWon, iif(games.Win=0, (SELECT username FROM users WHERE games.PlayerOne=id), (SELECT username FROM users WHERE games.PlayerTwo=id)) AS WhoLost, Date FROM games) as s  GROUP BY s.GameUUID, s.WhoWon, s.WhoLost,  s.Date ;");
+                ps = conn.prepareStatement("SELECT iif( games.win=-1, 'Tie!', (SELECT username FROM users WHERE id = games.Win)) AS Winner, iif ( games.win=-1,  (SELECT username FROM users WHERE id = games.PlayerOne) & ',' & (SELECT username FROM users WHERE id = PlayerTwo),   ( SELECT username FROM users WHERE id = iif( games.Win=games.PlayerOne, games.PlayerTwo, games.PlayerOne))) AS Loser, Date FROM games");
+                
+                //ps = conn.prepareStatement("SELECT s.GameUUID, s.WhoWon, s.WhoLost, s.Date FROM ( SELECT GameUUID, iif(games.Win=1, (SELECT username FROM users WHERE games.PlayerOne=id), (SELECT username FROM users WHERE games.PlayerTwo=id)) AS WhoWon, iif(games.Win=0, (SELECT username FROM users WHERE games.PlayerOne=id), (SELECT username FROM users WHERE games.PlayerTwo=id)) AS WhoLost, Date FROM games) as s  GROUP BY s.GameUUID, s.WhoWon, s.WhoLost,  s.Date ;");
             } else {
                 // They only want a certain player
-                ps = conn.prepareStatement("SELECT s.GameUUID, s.WhoWon, s.WhoLost, s.Date FROM ( SELECT GameUUID, iif(games.Win=1, (SELECT username FROM users WHERE games.PlayerOne=id), (SELECT username FROM users WHERE games.PlayerTwo=id)) AS WhoWon, iif(games.Win=0, (SELECT username FROM users WHERE games.PlayerOne=id), (SELECT username FROM users WHERE games.PlayerTwo=id)) AS WhoLost, Date FROM games WHERE PlayerOne=(SELECT id FROM users WHERE username=?)) as s  GROUP BY s.GameUUID, s.WhoWon, s.WhoLost,  s.Date ;");
+                ps = conn.prepareStatement("SELECT * FROM (SELECT iif( games.win=-1, 'Tie!', (SELECT username FROM users WHERE id = games.Win)) AS Winner, iif ( games.win=-1,  (SELECT username FROM users WHERE id = games.PlayerOne) & ',' & (SELECT username FROM users WHERE id = PlayerTwo),   ( SELECT username FROM users WHERE id = iif( games.Win=games.PlayerOne, games.PlayerTwo, games.PlayerOne))) AS Loser, Date FROM games) AS f WHERE f.Winner = ? OR f.Loser LIKE ?;");
                 ps.setString(1, player);
+                ps.setString(2, "%" + player + "%");
             }
 
             // Results from the prepared statement
@@ -248,9 +252,9 @@ public class AccessController implements DBController {
             while (results.next()) {
                 // Row array list
                 ObservableList<String> row = FXCollections.observableArrayList();
+                row.add(results.getString(1));
                 row.add(results.getString(2));
                 row.add(results.getString(3));
-                row.add(results.getString(4));
                 data.add(row);
             }
 
@@ -270,7 +274,7 @@ public class AccessController implements DBController {
 
         try {
             // Return a list of all the users their won games, lost games, and win percentage
-            PreparedStatement ps = conn.prepareStatement("SELECT [f].[username], [f].[Wins], [f].[totalgames], [f].[WinPercentage] FROM ( SELECT [users].[username],  (SELECT COUNT([games].[PlayerOne]) from [games] WHERE [games].[PlayerOne]=[users].[id] AND [games].[Win]=1) AS Wins, COUNT(g.WhoWon) AS totalgames, ((SELECT COUNT([games].[PlayerOne]) from [games] WHERE [games].[PlayerOne]=[users].[id] AND [games].[Win]=1) / COUNT(g.WhoWon)) AS WinPercentage FROM [users] LEFT OUTER JOIN ( SELECT s.GameUUID, s.WhoWon, s.WhoLost, s.Date FROM ( SELECT [games].[GameUUID], iif([games].[Win]=1, (SELECT [users].[username] FROM [users] WHERE [games].[PlayerOne]=id), (SELECT [users].[username] FROM [users] WHERE [games].[PlayerTwo]=[users].[id])) AS WhoWon, iif([games].[Win]=0, (SELECT [users].[username] FROM [users] WHERE [games].[PlayerOne]=[users].[id]), (SELECT [users].[username] FROM [users] WHERE [games].[PlayerTwo]=[users].[id])) AS WhoLost, [Date] FROM [games]) as s  GROUP BY s.GameUUID, s.WhoWon, s.WhoLost, s.Date ) AS g ON g.WhoWon = [users].[username] OR g.WhoLost = [users].[username] GROUP BY [users].[username], [users].[id]) AS [f] ORDER BY ([f].[Wins] / [f].[TotalGames]) ASC ");
+            PreparedStatement ps = conn.prepareStatement("SELECT f.username, f.wins, f.totalgames FROM (SELECT username, (SELECT COUNT(PlayerOne) FROM games WHERE win=users.id  ) AS WINS, (SELECT COUNT(PlayerOne) FROM games WHERE PlayerOne=users.id OR PlayerTwo=users.id) AS totalgames FROM users ) as f;");
 
             ResultSet results = ps.executeQuery();
 

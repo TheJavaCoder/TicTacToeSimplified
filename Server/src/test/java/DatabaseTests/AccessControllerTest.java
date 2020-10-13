@@ -191,7 +191,7 @@ public class AccessControllerTest {
 
         db.init();
 
-        String player1 = "Test2";
+        String player1 = "Test3";
         String player2 = "Test1";
         
         
@@ -201,8 +201,7 @@ public class AccessControllerTest {
         
         UUID uuid = UUID.randomUUID();
 
-        db.updateGameStats(db.getPlayer(player1), db.getPlayer(player2), false, uuid.toString());
-        db.updateGameStats(db.getPlayer(player2), db.getPlayer(player1), true, uuid.toString());
+        db.updateGameStats(db.getPlayer(player1), db.getPlayer(player2), -1, uuid.toString());
 
         printGameHistory(db.getPlayer(player1));
         printGameHistory(db.getPlayer(player2));
