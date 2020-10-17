@@ -1,4 +1,5 @@
 com\tictactoe\client\App$1.class
+com\tictactoe\server\game\Move.class
 com\tictactoe\client\App$2$1.class
 com\tictactoe\client\App.class
 module-info.class

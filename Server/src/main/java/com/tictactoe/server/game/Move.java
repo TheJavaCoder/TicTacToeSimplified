@@ -11,7 +11,7 @@ package com.tictactoe.server.game;
  */
 public class Move {
 
-    public int playerID, tileID;
+    public int tileX, tileY;
  
     
 }

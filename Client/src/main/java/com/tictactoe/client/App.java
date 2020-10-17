@@ -1,6 +1,7 @@
 package com.tictactoe.client;
 
 import com.tictactoe.server.Database.GameResult;
+import com.tictactoe.server.game.Move;
 import com.tictactoe.server.game.Player;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -27,6 +28,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseButton;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -45,10 +47,13 @@ public class App extends Application {
 
     Socket socket;
     String XorY;
-    boolean turn;
-
+    boolean turn = false;
+    
+    Stage message;
     Player player;
 
+    Move latestMove;
+    
     @Override
     public void start(Stage stage) {
 
@@ -233,19 +238,29 @@ public class App extends Application {
             try {
                 XorY = new DataInputStream(socket.getInputStream()).readUTF();
                 
-                System.out.println(XorY
-                );
+                if(XorY.equals("X")) {
+                    turn = true;
+                }
                 
                 Platform.runLater(() -> {
                     s.setTitle(s.getTitle() + " You're " + XorY);
-                    
+                    displayBox("You're " + XorY, 2000);
                 });
                 
 
                 boolean gameDone = false;
 
                 while (!gameDone) {
-
+                    String serverMessage = new DataInputStream(socket.getInputStream()).readUTF();
+                    
+                    switch(serverMessage) {
+                    
+                        case "GAME_OVER":
+                            
+                            break;
+                        case "YOUR_MOVE":
+                            break;
+                    }
                 }
 
             } catch (IOException ex) {
@@ -253,6 +268,34 @@ public class App extends Application {
             }
         }).start();
 
+    }
+    
+    public void displayBox(String message, long time) {
+    
+        HBox hbox = new HBox();
+        hbox.setAlignment(Pos.CENTER);
+        Label l = new Label(message);
+        
+        hbox.getChildren().add(l);
+        
+        Scene secondScene = new Scene(hbox, 260, 200);
+        this.message = new Stage();
+        this.message.setTitle("Message");
+        this.message.setScene(secondScene);
+        this.message.show();
+    
+        new Thread(() -> {
+        
+            try {
+                Thread.sleep(time);
+                Platform.runLater(() -> {
+                    this.message.close();
+                });
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+            
+        }).start();
     }
 
     private Parent createContent() {
@@ -288,22 +331,20 @@ public class App extends Application {
             //Set what happens when click a tile
             setOnMouseClicked(event -> {
                 System.out.println("tile x: " + x + " y:" + y);
-                if (event.getButton() == MouseButton.PRIMARY) {
-                    drawX();
-                } else if (event.getButton() == MouseButton.SECONDARY) {
-                    drawO();
+                if(turn) {
+                    latestMove = new Move(x,y);
+                }else {
+                    Platform.runLater(() -> {
+                        displayBox("It isn't your turn please wait!", 1500);
+                    });
                 }
 
             });
         }
-
-        private void drawX() {
-            text.setText("X");
-        }
-
-        private void drawO() {
-            text.setText("O");
-        }
+    }
+    
+    public void waitForServerResponse() {
+        
     }
 
     public static void main(String[] args) {
