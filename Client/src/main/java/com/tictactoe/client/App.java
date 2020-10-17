@@ -44,6 +44,8 @@ import javafx.util.StringConverter;
 public class App extends Application {
 
     Socket socket;
+    String XorY;
+    boolean turn;
 
     Player player;
 
@@ -184,9 +186,9 @@ public class App extends Application {
             ObservableList<String> row = FXCollections.observableArrayList();
             row.add(gr.opponent);
             row.add(gr.date.toString());
-            if(gr.won != -1) {
+            if (gr.won != -1) {
                 row.add(gr.won == player.id ? "You" : "Them");
-            }else {
+            } else {
                 row.add("Tie!");
             }
             data.add(row);
@@ -203,7 +205,6 @@ public class App extends Application {
 
             try {
                 String readyToPlay = new DataInputStream(socket.getInputStream()).readUTF();
-                
 
                 if ("Start_Game".equals(readyToPlay)) {
                     String title = new DataInputStream(socket.getInputStream()).readUTF();
@@ -212,6 +213,7 @@ public class App extends Application {
                         connecting.setText("Connected!");
                         s.setTitle(title);
                         s.setScene(new Scene(createContent()));
+                        runGame(s);
 
                     });
 
@@ -224,13 +226,42 @@ public class App extends Application {
 
     }
 
+    public void runGame(Stage s) {
+
+        new Thread(() -> {
+
+            try {
+                XorY = new DataInputStream(socket.getInputStream()).readUTF();
+                
+                System.out.println(XorY
+                );
+                
+                Platform.runLater(() -> {
+                    s.setTitle(s.getTitle() + " You're " + XorY);
+                    
+                });
+                
+
+                boolean gameDone = false;
+
+                while (!gameDone) {
+
+                }
+
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }).start();
+
+    }
+
     private Parent createContent() {
         Pane root = new Pane();
         root.setPrefSize(450, 450);
 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                Tile tile = new Tile();
+                Tile tile = new Tile(j, i);
                 tile.setTranslateX(j * 150);
                 tile.setTranslateY(i * 150);
                 root.getChildren().add(tile);
@@ -242,8 +273,11 @@ public class App extends Application {
     public class Tile extends StackPane {
 
         private Text text = new Text();
+        private int x, y;
 
-        public Tile() {
+        public Tile(int x, int y) {
+            this.x = x;
+            this.y = y;
             Rectangle border = new Rectangle(150, 150);
             border.setFill(null);
             border.setStroke(Color.BLACK);
@@ -253,6 +287,7 @@ public class App extends Application {
             getChildren().addAll(border, text);
             //Set what happens when click a tile
             setOnMouseClicked(event -> {
+                System.out.println("tile x: " + x + " y:" + y);
                 if (event.getButton() == MouseButton.PRIMARY) {
                     drawX();
                 } else if (event.getButton() == MouseButton.SECONDARY) {

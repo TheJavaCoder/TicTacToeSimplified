@@ -1,9 +1,15 @@
 package com.tictactoe.server.game;
 
 import com.tictactoe.server.Database.GameResult;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
+
+/**
+ * Authored by: Bailey Costello
+ * 2020
+ */
 
 public class Player implements Serializable {
 
@@ -15,6 +21,8 @@ public class Player implements Serializable {
 
     // list of the different games the user has played
     public ArrayList<GameResult> gameHistory;
+    
+    public String assigned;
     
     public transient Socket connection;
     
@@ -31,7 +39,7 @@ public class Player implements Serializable {
         return counter / gameHistory.size();
         
     }
-
+    
     public int getMatchesWithPlayer(String otherplayer) {
         int count = 0;
     

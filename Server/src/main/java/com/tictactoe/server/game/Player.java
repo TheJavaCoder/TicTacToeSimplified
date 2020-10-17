@@ -22,6 +22,7 @@ public class Player implements Serializable {
     // list of the different games the user has played
     public ArrayList<GameResult> gameHistory;
     
+    public String assigned;
     
     public transient Socket connection;
     

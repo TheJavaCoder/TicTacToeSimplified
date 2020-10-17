@@ -9,6 +9,7 @@ package com.tictactoe.server.game;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,6 +37,29 @@ public class TicTacToe implements Runnable{
         int numberOfMatches = players.get(0).getMatchesWithPlayer(players.get(1).name);
         alertPlayer("Match #" + (numberOfMatches + 1 )  + " against " + players.get(0).name, players.get(1));
         alertPlayer("Match #" + (numberOfMatches + 1 )  + " against " + players.get(1).name, players.get(0));
+        
+        assignXY();
+        
+        
+    }
+    
+    public void assignXY() {
+        
+        int player = new Random().nextInt(2);
+ 
+        int otherPlayer = 0;
+        for(int i = 0; i < players.size(); i++) {
+            if(i != player) {
+                otherPlayer = i;
+                break;
+            }
+        }
+        
+        players.get(player).assigned = "X";
+        players.get(otherPlayer).assigned = "Y";
+        
+        alertPlayer("X", players.get(player));
+        alertPlayer("Y", players.get(otherPlayer));
     }
     
     public void alertPlayer(String message, Player p) {
