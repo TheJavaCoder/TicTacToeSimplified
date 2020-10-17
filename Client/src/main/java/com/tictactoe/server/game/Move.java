@@ -5,11 +5,13 @@
  */
 package com.tictactoe.server.game;
 
+import java.io.Serializable;
+
 /**
  * Authored by: Bailey Costello
  * 2020
  */
-public class Move {
+public class Move implements Serializable{
 
     public int tileX, tileY;
  

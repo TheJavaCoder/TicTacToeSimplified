@@ -39,13 +39,13 @@ import javafx.util.StringConverter;
  */
 public class App extends Application {
 
-    TextArea debug = new TextArea();
+    public static TextArea debug = new TextArea();
 
     ServerSocket socket;
 
     ArrayList<Player> waitingPlayers = new ArrayList<>();
 
-    private DBController db;
+    private static DBController db;
     
     ArrayList<Stage> extraStages = new ArrayList<>();
     
@@ -147,7 +147,8 @@ public class App extends Application {
 
                         t.start();
 
-                        //waitingPlayers.removeAll(selectedPlayers);
+                        waitingPlayers.remove(0);
+                        waitingPlayers.remove(0);
                     }
                 }
 
@@ -277,14 +278,16 @@ public class App extends Application {
     public static void main(String[] args) {
         launch();
     }
+    
+    
 
     public void init() {
         db = new AccessController();
         db.init();
     }
 
-    public DBController getDB() {
-        return this.db;
+    public static DBController getDB() {
+        return db;
     }
 
 }
