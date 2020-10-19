@@ -61,22 +61,7 @@ public class TicTacToe implements Runnable {
 
             board[m.tileX][m.tileY] = (p.assigned == "X" ? 1 : 0);
 
-            if (tie()) {
-                Platform.runLater(() -> {
-
-                    App.debug.appendText("\n-------------------------------------\nGame: " + gameUUID.toString() + " tied!" + "\n-------------------------------------\n");
-
-                });
-                
-                alertPlayer("ENDSCREEN", getOtherPlayer(p));
-                alertPlayer("Sorry, " + p.name + " is the winner.\n Would you like to play again?", getOtherPlayer(p));
-                
-                alertPlayer("ENDSCREEN", p);
-                alertPlayer("You won!\n Would you like to play again?", p);
-                
-                App.getDB().updateGameStats(p, getOtherPlayer(p), -1, gameUUID.toString());
-            }
-
+            
             if (win(p)) {
 
                 Platform.runLater(() -> {
@@ -93,7 +78,25 @@ public class TicTacToe implements Runnable {
                 
                 App.getDB().updateGameStats(p, getOtherPlayer(p), p.id, gameUUID.toString());
             }
+            
+            
+            if (tie()) {
+                Platform.runLater(() -> {
 
+                    App.debug.appendText("\n-------------------------------------\nGame: " + gameUUID.toString() + " tied!" + "\n-------------------------------------\n");
+
+                });
+                
+                alertPlayer("ENDSCREEN", getOtherPlayer(p));
+                alertPlayer("You tied!\n Would you like to play again?", getOtherPlayer(p));
+                
+                alertPlayer("ENDSCREEN", p);
+                alertPlayer("You tied!\n Would you like to play again?", p);
+                
+                App.getDB().updateGameStats(p, getOtherPlayer(p), -1, gameUUID.toString());
+                
+            }
+            
             alertPlayer("VALID_MOVE", p);
             alertPlayer("PLAYER_MOVE", getOtherPlayer(p));
             sendMove(m, getOtherPlayer(p));
