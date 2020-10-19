@@ -221,7 +221,7 @@ public class TicTacToe implements Runnable {
             return true;
         }
 
-        if (board[0][2] == player && board[1][1] == player && board[2][2] == player) {
+        if (board[0][2] == player && board[1][1] == player && board[2][0] == player) {
             return true;
         }
 
