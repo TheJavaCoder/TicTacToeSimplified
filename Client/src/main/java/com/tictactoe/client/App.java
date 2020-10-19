@@ -385,7 +385,6 @@ public class App extends Application {
             
             new ObjectOutputStream(socket.getOutputStream()).writeObject(latestMove);
             
-            turn = false;
             
             
             
