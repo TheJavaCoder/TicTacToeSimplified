@@ -48,13 +48,15 @@ public class TicTacToe implements Runnable {
         for (int i = 0; i < board.length * board.length; i++) {
 
             Player p;
-
+            
             if (i % 2 == 0) {
                 p = players.get(xPlayer);
             } else {
                 p = getOtherPlayer(players.get(xPlayer));
             }
 
+            
+            
             Move m = getInput(p);
 
             board[m.tileX][m.tileY] = (p.assigned == "X" ? 1 : 0);
@@ -161,10 +163,13 @@ public class TicTacToe implements Runnable {
     public Move getInput(Player p) {
 
         boolean valid = false;
+        
+        alertPlayer("YOUR_TURN", p);
 
         Move m = null;
         while (!valid) {
             try {
+                
                 m = (Move) new ObjectInputStream(p.connection.getInputStream()).readObject();
 
                 valid = isValid(m);

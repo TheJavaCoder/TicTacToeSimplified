@@ -28,7 +28,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -54,7 +53,7 @@ public class App extends Application {
     
     Player player;
     Move latestMove;
-    boolean reviced = false;
+    boolean turn = false;
     
     Tile[][] tiles = new Tile[3][3];
     
@@ -251,6 +250,7 @@ public class App extends Application {
                     displayBox("You're " + XorY, null, 2000);
                 });
                 
+                
                 boolean gameDone = false;
                 
                 while (!gameDone) {
@@ -262,9 +262,10 @@ public class App extends Application {
                             
                             break;
                         case "YOUR_TURN":
+                            turn = true;
                             break;
                         case "VALID_MOVE":
-                            this.reviced = true;
+                            this.turn = false;
                             tiles[latestMove.tileX][latestMove.tileY].text.setText(XorY);
                             break;
                         case "PLAYER_MOVE":
@@ -370,8 +371,10 @@ public class App extends Application {
             //Set what happens when click a tile
             setOnMouseClicked(event -> {
                 System.out.println("tile x: " + x + " y:" + y);
-                latestMove = new Move(x, y);
-                sendResponse();
+                if(turn) {
+                    latestMove = new Move(x, y);
+                    sendResponse();
+                }
             });
         }
     }
@@ -382,23 +385,9 @@ public class App extends Application {
             
             new ObjectOutputStream(socket.getOutputStream()).writeObject(latestMove);
             
-            new Thread(() -> {
-                
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                }
-                
-                Platform.runLater(() -> {
-                    
-                    if (!reviced) {
-                        displayBox("It isn't your turn please wait...", null, 1000);
-                    }
-                    
-                });
-                
-            }).start();
+            turn = false;
+            
+            
             
         } catch (Exception ex) {
             ex.printStackTrace();

@@ -7,4 +7,3 @@ com\tictactoe\server\Database\GameResult.class
 com\tictactoe\server\game\Player.class
 com\tictactoe\client\App$Tile.class
 com\tictactoe\client\App$2.class
-com\tictactoe\server\game\TicTacToe.class
